@@ -4,7 +4,7 @@ import { X, Calendar, Tag, Briefcase, User, Plus, Trash2, Users } from 'lucide-r
 
 import { format } from 'date-fns';
 
-export default function TaskForm({ onClose, taskToEdit = null, initialDivision = 'personal', initialDate = null }) {
+export default function TaskForm({ onClose, taskToEdit = null, initialDivision = 'personal', initialDate = null, initialSection = null }) {
     const { addTask, updateTask, subsections, addSection } = useTasks();
 
     const [formData, setFormData] = useState({
@@ -26,15 +26,15 @@ export default function TaskForm({ onClose, taskToEdit = null, initialDivision =
         if (taskToEdit) {
             setFormData({ ...taskToEdit });
         } else {
-            // Set default section based on division
+            // Set default section based on division or use initialSection
             const currentSubsections = subsections[initialDivision] || [];
             setFormData(prev => ({
                 ...prev,
                 division: initialDivision,
-                section: currentSubsections[0] || 'General'
+                section: initialSection || currentSubsections[0] || 'General'
             }));
         }
-    }, [taskToEdit, initialDivision, subsections]);
+    }, [taskToEdit, initialDivision, subsections, initialSection]);
 
     // Update section when division changes manually
     const handleDivisionChange = (newDivision) => {

@@ -15,6 +15,7 @@ export default function TaskBoard() {
     const [isCalendarOpen, setIsCalendarOpen] = useState(false); // Dropdown state
     const [currentMonth, setCurrentMonth] = useState(new Date()); // For calendar navigation
     const [taskToEdit, setTaskToEdit] = useState(null);
+    const [initialSectionForForm, setInitialSectionForForm] = useState(null);
 
     // Helpers
     // FIX: Parse YYYY-MM-DD string as LOCAL date to avoid UTC shifts
@@ -62,8 +63,9 @@ export default function TaskBoard() {
         setIsFormOpen(true);
     };
 
-    const handleNewTask = () => {
+    const handleNewTask = (section = null) => {
         setTaskToEdit(null);
+        setInitialSectionForForm(section);
         setIsFormOpen(true);
     };
 
@@ -216,7 +218,7 @@ export default function TaskBoard() {
                     </div>
 
                     <button
-                        onClick={handleNewTask}
+                        onClick={() => handleNewTask()}
                         className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-lg shadow-lg shadow-indigo-500/30 transition-all hover:scale-105 active:scale-95"
                         title="Nueva Tarea"
                     >
@@ -265,8 +267,14 @@ export default function TaskBoard() {
                                         </div>
                                     ) : (
                                         completed.length === 0 && (
-                                            <div className="py-8 text-center border-2 border-dashed border-slate-200 rounded-lg opacity-50 bg-white/50 mx-2 mt-4">
+                                            <div
+                                                onClick={() => handleNewTask(section)}
+                                                className="py-8 text-center border-2 border-dashed border-slate-200 rounded-lg opacity-50 bg-white/50 mx-2 mt-4 flex flex-col items-center justify-center gap-2 group hover:opacity-100 hover:border-indigo-300 hover:bg-indigo-50/10 transition-all cursor-pointer"
+                                            >
                                                 <p className="text-xs text-slate-400">Sin tareas para {getDateLabel()}</p>
+                                                <div className="flex items-center gap-1 text-indigo-500 text-xs font-bold opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
+                                                    <Plus size={14} /> <span>Agregar aquí</span>
+                                                </div>
                                             </div>
                                         )
                                     )}
@@ -307,6 +315,7 @@ export default function TaskBoard() {
                 <TaskForm
                     onClose={() => setIsFormOpen(false)}
                     taskToEdit={taskToEdit}
+                    initialSection={initialSectionForForm}
                     initialDivision={activeDivision}
                     initialDate={selectedDate} // Pass selected date to form
                 />
