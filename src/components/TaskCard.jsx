@@ -1,66 +1,139 @@
 import React from 'react';
-import { Calendar, User, AlertCircle } from 'lucide-react';
-import { format, isPast, isToday, isTomorrow } from 'date-fns';
+import { Calendar, User, AlertCircle, ArrowRight, CheckCircle2, Clock, Check, Trash2 } from 'lucide-react';
+import { format, isPast, isToday, isTomorrow, addDays } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { useTasks } from '../context/TaskContext';
 
-export default function TaskCard({ task, onEdit }) {
-    const isOverdue = task.dueDate && isPast(new Date(task.dueDate)) && task.status !== 'completed';
-    const isDueSoon = task.dueDate && (isToday(new Date(task.dueDate)) || isTomorrow(new Date(task.dueDate)));
+export default function TaskCard({ task, onEdit, isTomorrowView = false }) {
+    const { moveTaskToTomorrow, moveTaskToToday, updateTask, deleteTask } = useTasks();
 
-    const priorityColors = {
-        low: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
-        medium: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
-        high: 'bg-red-500/10 text-red-400 border-red-500/30',
+    const priorityHeaderColors = {
+        high: 'bg-red-500 border-red-600 text-white',
+        medium: 'bg-amber-500 border-amber-600 text-white',
+        low: 'bg-blue-500 border-blue-600 text-white',
+        default: 'bg-slate-700 border-slate-800 text-white'
     };
+
+    const handleComplete = (e) => {
+        e.stopPropagation();
+        if (task.status === 'completed') {
+            updateTask(task.id, { status: 'pending' });
+        } else {
+            updateTask(task.id, { status: 'completed' });
+        }
+    };
+
+    const handleDelete = (e) => {
+        e.stopPropagation();
+        if (window.confirm('¿Estás seguro de eliminar esta tarea?')) {
+            deleteTask(task.id);
+        }
+    };
+
+    const isCompleted = task.status === 'completed';
+    // Greenish style for completed tasks as requested
+    const headerStyle = isCompleted
+        ? 'bg-emerald-100 border-emerald-200 text-emerald-800'
+        : (priorityHeaderColors[task.priority] || priorityHeaderColors.default);
 
     return (
         <div
-            onClick={() => onEdit(task)}
+            onClick={onEdit}
             className={`
-        bg-slate-900 border rounded-xl p-4 cursor-pointer transition-all hover:border-indigo-500/50 hover:shadow-lg hover:shadow-indigo-500/10
-        ${isOverdue ? 'border-red-500/50' : 'border-slate-800'}
-      `}
+                group relative flex flex-col rounded-xl overflow-hidden border transition-all cursor-pointer hover:shadow-lg
+                ${isCompleted
+                    ? 'bg-slate-50 border-slate-200 opacity-70'
+                    : 'bg-white border-slate-200 hover:border-indigo-300 shadow-sm'
+                }
+            `}
         >
-            {isOverdue && (
-                <div className="flex items-center text-red-400 text-xs mb-2">
-                    <AlertCircle size={14} className="mr-1" />
-                    <span>Vencida</span>
+            {/* Header with Priority Color */}
+            <div className={`px-3 py-2 flex items-center justify-between gap-2 ${headerStyle}`}>
+                <h4 className={`text-sm font-bold truncate flex-1 leading-tight ${isCompleted ? 'line-through' : ''}`}>
+                    {task.title}
+                </h4>
+
+                <div className="flex items-center gap-1">
+                    {/* Delete Button */}
+                    <button
+                        onClick={handleDelete}
+                        className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/20 transition-all opacity-0 group-hover:opacity-100"
+                        title="Eliminar tarea"
+                    >
+                        <Trash2 size={14} />
+                    </button>
+
+                    {/* Complete Button */}
+                    <button
+                        onClick={handleComplete}
+                        className={`
+                            shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all
+                            ${isCompleted
+                                ? 'bg-emerald-500 border-emerald-500 text-white hover:bg-emerald-600 hover:border-emerald-600'
+                                : 'border-white/50 hover:bg-white hover:text-indigo-600 text-transparent'
+                            }
+                        `}
+                        title={isCompleted ? "Marcar como pendiente" : "Marcar como realizada"}
+                    >
+                        <Check size={12} strokeWidth={3} />
+                    </button>
                 </div>
-            )}
-
-            <h3 className="font-semibold text-white mb-2">{task.title}</h3>
-
-            {task.description && (
-                <p className="text-sm text-slate-400 mb-3 line-clamp-2">{task.description}</p>
-            )}
-
-            <div className="flex flex-wrap gap-2 mb-3">
-                {task.category && (
-                    <span className="px-2 py-1 bg-indigo-500/10 text-indigo-400 text-xs rounded-md border border-indigo-500/20">
-                        {task.category}
-                    </span>
-                )}
-
-                {task.priority && (
-                    <span className={`px-2 py-1 text-xs rounded-md border ${priorityColors[task.priority]}`}>
-                        {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-                    </span>
-                )}
             </div>
 
-            <div className="flex items-center justify-between text-xs text-slate-500">
-                {task.dueDate && (
-                    <div className={`flex items-center ${isDueSoon && !isOverdue ? 'text-yellow-400' : ''}`}>
-                        <Calendar size={14} className="mr-1" />
-                        <span>{format(new Date(task.dueDate), 'dd/MM/yyyy')}</span>
+            {/* Body */}
+            <div className="p-3 flex-1 flex flex-col gap-2">
+                {task.description && (
+                    <p className={`text-xs text-slate-500 line-clamp-2 ${isCompleted ? 'opacity-50' : ''}`}>
+                        {task.description}
+                    </p>
+                )}
+
+                {/* Assignees Display */}
+                {task.assignees && (
+                    <div className="flex items-center gap-1.5 text-[11px] text-slate-500 bg-slate-50 px-2 py-1 rounded-md w-fit">
+                        <User size={10} className="text-indigo-400" />
+                        <span className="truncate max-w-[150px]">{task.assignees}</span>
                     </div>
                 )}
 
-                {task.assignedTo && task.assignedTo.length > 0 && (
-                    <div className="flex items-center">
-                        <User size={14} className="mr-1" />
-                        <span>{task.assignedTo.length}</span>
+                <div className="mt-auto flex items-center justify-between text-[10px] text-slate-400 pt-2 border-t border-slate-100">
+                    {/* Date */}
+                    {(task.dueDate && !isCompleted) ? (
+                        <div className={`flex items-center gap-1 font-medium ${task.dueDate < format(new Date(), 'yyyy-MM-dd') ? 'text-red-500' :
+                                task.dueDate === format(new Date(), 'yyyy-MM-dd') ? 'text-green-600' : 'text-slate-400'
+                            }`}>
+                            <Clock size={12} />
+                            {task.dueDate === format(new Date(), 'yyyy-MM-dd') ? 'Hoy' :
+                                task.dueDate === format(addDays(new Date(), 1), 'yyyy-MM-dd') ? 'Mañana' :
+                                    format(new Date(parseInt(task.dueDate.split('-')[0]), parseInt(task.dueDate.split('-')[1]) - 1, parseInt(task.dueDate.split('-')[2])), "d MMM", { locale: es })}
+                        </div>
+                    ) : (
+                        <span></span>
+                    )}
+
+                    {/* Quick Actions (Hover) */}
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                        {!isCompleted && task.dueDate === format(new Date(), 'yyyy-MM-dd') && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); moveTaskToTomorrow(task.id); }}
+                                className="p-1 hover:bg-slate-100 rounded text-slate-500 flex items-center gap-1"
+                                title="Pasar a mañana"
+                            >
+                                Mañana <ArrowRight size={10} />
+                            </button>
+                        )}
+                        {/* Helper for tomorrow view */}
+                        {isTomorrowView && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); moveTaskToToday(task.id); }}
+                                className="p-1 hover:bg-indigo-50 text-indigo-500 rounded flex items-center gap-1"
+                                title="Traer a hoy"
+                            >
+                                <ArrowRight size={10} className="rotate-180" /> Hoy
+                            </button>
+                        )}
                     </div>
-                )}
+                </div>
             </div>
         </div>
     );

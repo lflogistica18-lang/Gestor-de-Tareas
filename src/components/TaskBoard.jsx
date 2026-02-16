@@ -1,25 +1,61 @@
 import React, { useState } from 'react';
 import { useTasks } from '../context/TaskContext';
-import { usePeople } from '../context/PeopleContext'; // If needed for filters
-import { Plus, Search, Calendar as CalendarIcon, Filter, Clock, AlertCircle } from 'lucide-react';
-import { format, isPast, isToday, parseISO } from 'date-fns';
+import { Plus, Search, Calendar as CalendarIcon, Filter, ChevronUp, ChevronDown, Briefcase, User, Layout, Trash2, ListChecks, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { format, addDays, subDays, isToday, isTomorrow, isYesterday, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
 import { es } from 'date-fns/locale';
 import TaskForm from './TaskForm';
+import TaskCard from './TaskCard';
 
 export default function TaskBoard() {
-    const { tasks, categories } = useTasks();
-    const [filter, setFilter] = useState('all'); // all, active, completed
+    const { tasks, subsections, deleteSection, addSection } = useTasks();
+    const [activeDivision, setActiveDivision] = useState('personal'); // 'personal' | 'work'
+    const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
     const [search, setSearch] = useState('');
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isCalendarOpen, setIsCalendarOpen] = useState(false); // Dropdown state
+    const [currentMonth, setCurrentMonth] = useState(new Date()); // For calendar navigation
     const [taskToEdit, setTaskToEdit] = useState(null);
 
-    // Derived state
-    const filteredTasks = tasks.filter(task => {
-        if (filter === 'completed' && task.status !== 'completed') return false;
-        if (filter === 'active' && task.status === 'completed') return false;
-        if (search && !task.title.toLowerCase().includes(search.toLowerCase())) return false;
-        return true;
+    // Helpers
+    // FIX: Parse YYYY-MM-DD string as LOCAL date to avoid UTC shifts
+    const parseLocalDate = (dateString) => {
+        if (!dateString) return new Date();
+        const [year, month, day] = dateString.split('-').map(Number);
+        return new Date(year, month - 1, day);
+    };
+
+    const handlePrevDay = () => setSelectedDate(prev => format(subDays(parseLocalDate(prev), 1), 'yyyy-MM-dd'));
+    const handleNextDay = () => setSelectedDate(prev => format(addDays(parseLocalDate(prev), 1), 'yyyy-MM-dd'));
+    const handleToday = () => {
+        const today = new Date();
+        setSelectedDate(format(today, 'yyyy-MM-dd'));
+        setCurrentMonth(today);
+    };
+
+    // Calendar Generation Logic
+    const generateCalendarDays = () => {
+        const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 1 }); // Monday start
+        const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 1 });
+        return eachDayOfInterval({ start, end });
+    };
+
+    const handleDateSelect = (date) => {
+        setSelectedDate(format(date, 'yyyy-MM-dd'));
+        setIsCalendarOpen(false);
+    };
+
+    // Pending Count for Header
+    const currentTasks = tasks.filter(task => {
+        const isDateMatch = task.dueDate === selectedDate;
+        const isDivisionMatch = (task.division || 'personal') === activeDivision;
+        const isSearchMatch = search ? task.title.toLowerCase().includes(search.toLowerCase()) : true;
+        return isDateMatch && isDivisionMatch && isSearchMatch;
     });
+
+    // Subsections for columns
+    const currentSubsections = subsections[activeDivision] || [];
+
+    const pendingCount = currentTasks.filter(t => t.status !== 'completed').length;
 
     const handleEdit = (task) => {
         setTaskToEdit(task);
@@ -31,68 +67,239 @@ export default function TaskBoard() {
         setIsFormOpen(true);
     };
 
+    // Date Display Label
+    const getDateLabel = () => {
+        const date = parseLocalDate(selectedDate);
+        if (isToday(date)) return 'Hoy';
+        if (isTomorrow(date)) return 'Mañana';
+        if (isYesterday(date)) return 'Ayer';
+        return format(date, "d 'de' MMMM", { locale: es });
+    };
+
     return (
-        <div className="space-y-6 max-w-7xl mx-auto">
-            {/* Header Actions */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h2 className="text-2xl font-bold text-white tracking-tight">Mis Tareas</h2>
-                    <p className="text-slate-400 text-sm mt-1">Gestiona y organiza tus actividades pendientes</p>
-                </div>
+        <div className="h-full flex flex-col p-4 lg:p-6 overflow-hidden bg-slate-50 text-slate-900">
+            {/* Header & Controls */}
+            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6 shrink-0">
 
-                <button
-                    onClick={handleNewTask}
-                    className="flex items-center px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium shadow-lg shadow-indigo-500/20 transition-all hover:-translate-y-0.5 active:translate-y-0"
-                >
-                    <Plus size={18} className="mr-2" />
-                    Nueva Tarea
-                </button>
-            </div>
-
-            {/* Filters & Search */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 bg-slate-900/50 p-4 rounded-xl border border-slate-800 backdrop-blur-sm">
-                <div className="md:col-span-5 relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
-                    <input
-                        type="text"
-                        placeholder="Buscar tarea..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-10 pr-4 py-2.5 text-slate-200 placeholder:text-slate-600 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all"
-                    />
-                </div>
-
-                <div className="md:col-span-7 flex flex-wrap gap-2">
-                    {['all', 'active', 'completed'].map(f => (
-                        <button
-                            key={f}
-                            onClick={() => setFilter(f)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${filter === f
-                                ? 'bg-slate-800 text-white border-slate-700'
-                                : 'text-slate-400 hover:text-slate-200 border-transparent hover:bg-slate-800/50'
-                                }`}
-                        >
-                            {f === 'all' ? 'Todas' : f === 'active' ? 'Pendientes' : 'Completadas'}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* Task Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {filteredTasks.length > 0 ? (
-                    filteredTasks.map(task => (
-                        <TaskCard key={task.id} task={task} onEdit={() => handleEdit(task)} />
-                    ))
-                ) : (
-                    <div className="col-span-full py-12 text-center text-slate-500 flex flex-col items-center">
-                        <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mb-4 border border-slate-800">
-                            <Filter size={24} className="opacity-50" />
-                        </div>
-                        <p className="text-lg">No se encontraron tareas</p>
-                        <p className="text-sm opacity-60">Prueba ajustando los filtros o crea una nueva</p>
+                {/* Title & Stats */}
+                <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2 uppercase">
+                            {activeDivision === 'personal' ? <User size={28} className="text-indigo-600" /> : <Briefcase size={28} className="text-indigo-600" />}
+                            {activeDivision === 'personal' ? 'Personal' : 'Trabajo'}
+                        </h1>
+                        <div className="h-6 w-px bg-slate-300 mx-2"></div>
+                        <span className="text-indigo-600 font-bold bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100 text-sm">
+                            {pendingCount} Pendientes
+                        </span>
                     </div>
-                )}
+                </div>
+
+                {/* Center Navigation (Date) - Responsive placement */}
+                <div className="flex items-center bg-white rounded-xl shadow-sm border border-slate-200 p-1 self-center xl:absolute xl:left-1/2 xl:-translate-x-1/2 relative z-20">
+                    <button onClick={handlePrevDay} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors">
+                        <ChevronLeft size={20} />
+                    </button>
+
+                    <button
+                        onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+                        className="flex items-center gap-2 px-4 min-w-[140px] justify-center font-medium text-slate-700 hover:bg-slate-50 rounded-lg transition-colors py-1"
+                    >
+                        <CalendarIcon size={16} className="text-indigo-500" />
+                        <span className="capitalize">{getDateLabel()}</span>
+                    </button>
+
+                    <button onClick={handleNextDay} className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors">
+                        <ChevronRight size={20} />
+                    </button>
+                    {/* Button 'Ir a Hoy' if selectedDate is NOT today */}
+                    {selectedDate !== format(new Date(), 'yyyy-MM-dd') && (
+                        <button onClick={handleToday} className="ml-2 text-xs font-bold text-indigo-600 hover:bg-indigo-50 px-2 py-1 rounded">
+                            ir a Hoy
+                        </button>
+                    )}
+
+                    {/* DROPDOWN CALENDAR */}
+                    {isCalendarOpen && (
+                        <>
+                            <div className="fixed inset-0 z-10" onClick={() => setIsCalendarOpen(false)} /> {/* Backdrop */}
+                            <div className="absolute top-full mt-2 bg-white rounded-xl shadow-xl border border-slate-200 p-4 w-72 z-20 animate-in fade-in zoom-in-95 duration-100">
+                                {/* Calendar Header */}
+                                <div className="flex items-center justify-between mb-4">
+                                    <button
+                                        onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                                        className="p-1 hover:bg-slate-100 rounded text-slate-500"
+                                    >
+                                        <ChevronLeft size={16} />
+                                    </button>
+                                    <span className="font-bold text-slate-700 capitalize">
+                                        {format(currentMonth, 'MMMM yyyy', { locale: es })}
+                                    </span>
+                                    <button
+                                        onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                                        className="p-1 hover:bg-slate-100 rounded text-slate-500"
+                                    >
+                                        <ChevronRight size={16} />
+                                    </button>
+                                </div>
+
+                                {/* Calendar Grid */}
+                                <div className="grid grid-cols-7 gap-1 text-center text-xs mb-2">
+                                    {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map(d => (
+                                        <div key={d} className="font-bold text-slate-400">{d}</div>
+                                    ))}
+                                </div>
+                                <div className="grid grid-cols-7 gap-1">
+                                    {generateCalendarDays().map((day, idx) => {
+                                        // Compare strings to avoid timezone issues
+                                        const dayString = format(day, 'yyyy-MM-dd');
+                                        const isSelected = dayString === selectedDate;
+                                        const isCurrentMonth = isSameMonth(day, currentMonth);
+                                        const isTodayDate = isToday(day);
+
+                                        return (
+                                            <button
+                                                key={idx}
+                                                onClick={() => handleDateSelect(day)}
+                                                className={`
+                                                    h-8 w-8 rounded-full flex items-center justify-center text-xs transition-all relative
+                                                    ${isSelected
+                                                        ? 'bg-indigo-600 text-white font-bold shadow-md shadow-indigo-500/30'
+                                                        : isCurrentMonth ? 'text-slate-700 hover:bg-slate-100' : 'text-slate-300'
+                                                    }
+                                                    ${isTodayDate && !isSelected ? 'ring-1 ring-indigo-500 font-bold text-indigo-600' : ''}
+                                                `}
+                                            >
+                                                {format(day, 'd')}
+                                                {/* Dot for tasks indicator could go here if we had that data readily available for all days */}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </div>
+
+                {/* Right Controls */}
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                    {/* Search */}
+                    <div className="relative flex-1 sm:w-64">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-500">
+                            <ListChecks size={18} />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Buscar tarea..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full bg-white border border-slate-200 rounded-lg pl-10 pr-4 py-2 text-sm text-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all shadow-sm"
+                        />
+                    </div>
+
+                    {/* Division Switcher */}
+                    <div className="flex bg-white rounded-lg p-1 border border-slate-200 shadow-sm">
+                        <button
+                            onClick={() => setActiveDivision('personal')}
+                            className={`p-2 rounded-md transition-all ${activeDivision === 'personal' ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                            title="Personal"
+                        >
+                            <User size={18} />
+                        </button>
+                        <button
+                            onClick={() => setActiveDivision('work')}
+                            className={`p-2 rounded-md transition-all ${activeDivision === 'work' ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                            title="Trabajo"
+                        >
+                            <Briefcase size={18} />
+                        </button>
+                    </div>
+
+                    <button
+                        onClick={handleNewTask}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-lg shadow-lg shadow-indigo-500/30 transition-all hover:scale-105 active:scale-95"
+                        title="Nueva Tarea"
+                    >
+                        <Plus size={20} />
+                    </button>
+                </div>
+            </div>
+
+            {/* RESPONSIVE GRID COLUMNS */}
+            <div className="flex-1 overflow-y-auto pb-20 custom-scrollbar pr-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-4">
+                    {currentSubsections.map(section => {
+                        const sectionTasks = currentTasks.filter(t => (t.section || 'General') === section);
+                        const pending = sectionTasks.filter(t => t.status !== 'completed');
+                        const completed = sectionTasks.filter(t => t.status === 'completed');
+
+                        return (
+                            <div key={section} className="flex flex-col bg-slate-100 rounded-xl border border-slate-200 shadow-sm h-[500px] max-h-[60vh] overflow-hidden">
+                                {/* Column Header */}
+                                <div className="p-3 bg-indigo-900 text-white flex justify-between items-center sticky top-0 z-10 shadow-md">
+                                    <div className="flex items-center gap-2 overflow-hidden">
+                                        <h3 className="font-semibold truncate text-sm uppercase tracking-wide" title={section}>{section}</h3>
+                                        <span className="bg-indigo-800 text-indigo-200 text-[10px] px-1.5 py-0.5 rounded-full border border-indigo-700 font-medium">
+                                            {pending.length}
+                                        </span>
+                                    </div>
+
+                                    {section !== 'General' && (
+                                        <button
+                                            onClick={() => deleteSection(activeDivision, section)}
+                                            className="text-indigo-300 hover:text-red-400 transition-colors p-1 rounded"
+                                            title="Eliminar sección"
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Content */}
+                                <div className="flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar bg-slate-50">
+                                    {pending.length > 0 ? (
+                                        <div className="space-y-3">
+                                            {pending.map(task => (
+                                                <TaskCard key={task.id} task={task} onEdit={() => handleEdit(task)} />
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        completed.length === 0 && (
+                                            <div className="py-8 text-center border-2 border-dashed border-slate-200 rounded-lg opacity-50 bg-white/50 mx-2 mt-4">
+                                                <p className="text-xs text-slate-400">Sin tareas para {getDateLabel()}</p>
+                                            </div>
+                                        )
+                                    )}
+
+                                    {completed.length > 0 && (
+                                        <div className="pt-3 mt-2 border-t border-slate-200/50">
+                                            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 opacity-70 px-1">
+                                                Realizadas
+                                            </h4>
+                                            <div className="space-y-2 opacity-60 hover:opacity-100 transition-opacity">
+                                                {completed.map(task => (
+                                                    <TaskCard key={task.id} task={task} onEdit={() => handleEdit(task)} />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+
+                    {/* Add Section Button */}
+                    <button
+                        onClick={() => {
+                            const name = prompt("Nombre de la nueva sección:");
+                            if (name) addSection(activeDivision, name);
+                        }}
+                        className="flex flex-col items-center justify-center h-32 bg-white border-2 border-dashed border-slate-200 rounded-xl hover:border-indigo-400 hover:bg-indigo-50/10 text-slate-400 hover:text-indigo-500 transition-all opacity-70 hover:opacity-100"
+                    >
+                        <Plus size={24} className="mb-2" />
+                        <span className="text-sm font-medium">Nueva Sección</span>
+                    </button>
+                </div>
             </div>
 
             {/* Task Form Modal */}
@@ -100,60 +307,10 @@ export default function TaskBoard() {
                 <TaskForm
                     onClose={() => setIsFormOpen(false)}
                     taskToEdit={taskToEdit}
+                    initialDivision={activeDivision}
+                    initialDate={selectedDate} // Pass selected date to form
                 />
             )}
         </div>
-    );
-}
-
-function TaskCard({ task, onEdit }) {
-    const isUrgent = task.dueDate && (isPast(parseISO(task.dueDate)) || isToday(parseISO(task.dueDate))) && task.status !== 'completed';
-
-    return (
-        <article className={`
-      group bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition-all duration-300 hover:shadow-xl hover:shadow-black/20
-      flex flex-col relative overflow-hidden
-      ${isUrgent ? 'ring-1 ring-red-500/20' : ''}
-    `}>
-            {/* Category Badge */}
-            <div className="flex justify-between items-start mb-3">
-                <span className="px-2.5 py-1 rounded-md text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700/50">
-                    {task.category}
-                </span>
-                {isUrgent && (
-                    <span className="flex items-center text-red-400 text-xs font-bold animate-pulse">
-                        <AlertCircle size={14} className="mr-1" />
-                        {isPast(parseISO(task.dueDate)) ? 'Vencida' : 'Vence hoy'}
-                    </span>
-                )}
-            </div>
-
-            <h3 className="text-lg font-semibold text-slate-200 mb-2 group-hover:text-indigo-400 transition-colors line-clamp-2">
-                {task.title}
-            </h3>
-
-            {task.description && (
-                <p className="text-slate-500 text-sm mb-4 line-clamp-2 flex-1">
-                    {task.description}
-                </p>
-            )}
-
-            <div className="mt-auto pt-4 border-t border-slate-800/50 flex items-center justify-between text-xs text-slate-500">
-                <div className="flex items-center">
-                    <CalendarIcon size={14} className="mr-1.5 opacity-70" />
-                    <span>{task.dueDate ? format(parseISO(task.dueDate), 'd MMM', { locale: es }) : 'Sin fecha'}</span>
-                </div>
-
-                {/* Status Actions */}
-                <div className="flex gap-2">
-                    <button
-                        onClick={(e) => { e.stopPropagation(); onEdit(); }}
-                        className="hover:text-amber-400 transition-colors cursor-pointer"
-                    >
-                        Editar
-                    </button>
-                </div>
-            </div>
-        </article>
     );
 }

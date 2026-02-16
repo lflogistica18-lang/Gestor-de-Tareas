@@ -1,98 +1,88 @@
-import React from 'react';
-import { LayoutDashboard, Users, BarChart3, Settings, Menu } from 'lucide-react';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { Menu, X, CheckSquare, Calendar, Star, Settings, ChevronLeft, ChevronRight, Layout as LayoutIcon } from 'lucide-react';
+import { useTasks } from '../context/TaskContext';
 
-export default function Layout({ children, currentView, onNavigate }) {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+export default function Layout({ children }) {
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile toggle
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false); // Desktop collapse
 
-    const handleNavClick = (view) => {
-        onNavigate(view);
-        setIsSidebarOpen(false); // Close sidebar on mobile on nav
-    };
+    const { tasks } = useTasks();
+    const pendingCount = tasks.filter(t => t.status === 'pending').length;
 
     return (
-        <div className="flex h-screen bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500/30">
-            {/* Mobile Sidebar Overlay */}
+        <div className="flex h-screen bg-slate-50 overflow-hidden font-sans">
+            {/* Sidebar Overlay (Mobile) */}
             {isSidebarOpen && (
                 <div
-                    className="fixed inset-0 bg-black/50 z-20 lg:hidden backdrop-blur-sm"
+                    className="fixed inset-0 bg-black/50 z-20 lg:hidden"
                     onClick={() => setIsSidebarOpen(false)}
                 />
             )}
 
             {/* Sidebar */}
-            <aside className={`
-        fixed lg:translate-x-0 inset-y-0 left-0 z-30 w-64 bg-slate-900 border-r border-slate-800
-        transform transition-transform duration-300 ease-in-out
-        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
-                <div className="flex items-center justify-center h-16 border-b border-slate-800">
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
-                        TaskOrganizer
-                    </h1>
-                </div>
-
-                <nav className="p-4 space-y-2">
-                    <NavItem
-                        icon={<LayoutDashboard size={20} />}
-                        label="Tablero"
-                        active={currentView === 'dashboard'}
-                        onClick={() => handleNavClick('dashboard')}
-                    />
-                    <NavItem
-                        icon={<BarChart3 size={20} />}
-                        label="Reportes"
-                        active={currentView === 'reports'}
-                        onClick={() => handleNavClick('reports')}
-                    />
-                    <NavItem
-                        icon={<Users size={20} />}
-                        label="Personas"
-                        active={currentView === 'people'}
-                        onClick={() => handleNavClick('people')}
-                    />
-                    <div className="pt-4 mt-4 border-t border-slate-800">
-                        <NavItem icon={<Settings size={20} />} label="Configuración" />
+            <aside
+                className={`
+                    fixed top-0 left-0 z-30 h-full bg-slate-900 border-r border-slate-800 transition-all duration-300 ease-in-out
+                    ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+                    lg:translate-x-0 
+                    ${isSidebarCollapsed ? 'w-20' : 'w-64'}
+                `}
+            >
+                <div className="flex flex-col h-full">
+                    {/* Header */}
+                    <div className={`flex items-center h-16 px-4 border-b border-slate-800 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+                        {!isSidebarCollapsed && (
+                            <h1 className="text-lg font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent truncate">
+                                Organizador
+                            </h1>
+                        )}
+                        <button
+                            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 hidden lg:block"
+                            title={isSidebarCollapsed ? "Expandir" : "Colapsar"}
+                        >
+                            {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+                        </button>
+                        <button
+                            onClick={() => setIsSidebarOpen(false)}
+                            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 lg:hidden"
+                        >
+                            <X size={20} />
+                        </button>
                     </div>
-                </nav>
+
+                    {/* Navigation */}
+                    <nav className="flex-1 p-4 space-y-2">
+                        <div className={`
+                            flex items-center gap-3 p-3 text-indigo-400 bg-indigo-500/10 rounded-xl border border-indigo-500/20
+                            ${isSidebarCollapsed ? 'justify-center' : ''}
+                        `}>
+                            <LayoutIcon size={24} />
+                            {!isSidebarCollapsed && <span className="font-medium">Tablero</span>}
+                        </div>
+                    </nav>
+
+                    {/* Footer / Stats - REMOVED as per request to move to header */}
+                    {/* <div className="p-4 border-t border-slate-800">...</div> */}
+                </div>
             </aside>
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col lg:ml-64 min-w-0">
-                <header className="h-16 bg-slate-900/50 backdrop-blur-md border-b border-slate-800 flex items-center px-6 lg:hidden sticky top-0 z-10">
+            <div className={`flex-1 flex flex-col min-w-0 bg-slate-50 transition-all duration-300 ${isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
+                <header className="h-16 bg-white border-b border-slate-200 flex items-center px-6 lg:hidden sticky top-0 z-10 shadow-sm">
                     <button
                         onClick={() => setIsSidebarOpen(true)}
-                        className="p-2 -ml-2 text-slate-400 hover:text-white rounded-md hover:bg-slate-800 transition-colors"
+                        className="mr-4 text-slate-500 hover:text-indigo-600"
                     >
                         <Menu size={24} />
                     </button>
-                    <span className="ml-4 font-semibold text-lg">
-                        {currentView === 'dashboard' ? 'Tablero' : currentView === 'reports' ? 'Reportes' : 'Personas'}
-                    </span>
+                    <h1 className="text-lg font-bold text-slate-800">Organizador</h1>
                 </header>
 
-                <main className="flex-1 overflow-y-auto p-4 lg:p-8 relative">
+                <main className="flex-1 overflow-hidden relative">
                     {children}
                 </main>
             </div>
         </div>
-    );
-}
-
-function NavItem({ icon, label, active = false, onClick }) {
-    return (
-        <button
-            onClick={onClick}
-            className={`
-      w-full flex items-center px-4 py-3 rounded-lg transition-all duration-200 group
-      ${active
-                    ? 'bg-indigo-500/10 text-indigo-400 font-medium border border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.1)]'
-                    : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 hover:border hover:border-slate-700/50 border border-transparent'}
-    `}>
-            <span className={`${active ? 'text-indigo-400' : 'text-slate-500 group-hover:text-slate-300'}`}>
-                {icon}
-            </span>
-            <span className="ml-3">{label}</span>
-        </button>
     );
 }

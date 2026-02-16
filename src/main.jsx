@@ -4,13 +4,16 @@ import App from './App.jsx'
 import './index.css'
 import { TaskProvider } from './context/TaskContext'
 import { PeopleProvider } from './context/PeopleContext'
+import ErrorBoundary from './components/ErrorBoundary.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
-        <PeopleProvider>
-            <TaskProvider>
-                <App />
-            </TaskProvider>
-        </PeopleProvider>
+        <ErrorBoundary>
+            <PeopleProvider>
+                <TaskProvider>
+                    <App />
+                </TaskProvider>
+            </PeopleProvider>
+        </ErrorBoundary>
     </React.StrictMode>,
 )
