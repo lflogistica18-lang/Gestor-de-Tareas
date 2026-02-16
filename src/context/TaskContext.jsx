@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { v4 as uuidv4 } from 'uuid'; // Not installed, using random string via Math.random for now to avoid dep issue or install uuid
 
 const TaskContext = createContext();
 
