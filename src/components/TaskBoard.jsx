@@ -7,7 +7,7 @@ import TaskForm from './TaskForm';
 import TaskCard from './TaskCard';
 
 export default function TaskBoard() {
-    const { tasks, subsections, deleteSection, addSection } = useTasks();
+    const { tasks, subsections, deleteSection, addSection, addTask } = useTasks();
     const [activeDivision, setActiveDivision] = useState('personal'); // 'personal' | 'work'
     const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
     const [search, setSearch] = useState('');
@@ -16,6 +16,10 @@ export default function TaskBoard() {
     const [currentMonth, setCurrentMonth] = useState(new Date()); // For calendar navigation
     const [taskToEdit, setTaskToEdit] = useState(null);
     const [initialSectionForForm, setInitialSectionForForm] = useState(null);
+
+    // Estado para Quick Add
+    const [activeQuickAddSection, setActiveQuickAddSection] = useState(null);
+    const [quickAddTitle, setQuickAddTitle] = useState('');
 
     // Helpers
     // FIX: Parse YYYY-MM-DD string as LOCAL date to avoid UTC shifts
@@ -67,6 +71,36 @@ export default function TaskBoard() {
         setTaskToEdit(null);
         setInitialSectionForForm(section);
         setIsFormOpen(true);
+    };
+
+    const handleQuickAdd = (section) => {
+        if (!quickAddTitle.trim()) return;
+
+        const newTask = {
+            title: quickAddTitle.trim(),
+            description: '',
+            division: activeDivision,
+            section: section,
+            dueDate: selectedDate,
+            priority: 'medium',
+            status: 'pending',
+            assignees: ''
+        };
+
+        addTask(newTask);
+        setQuickAddTitle('');
+        // No cerramos el activeQuickAddSection para permitir agregar múltiples seguidas
+        // setActiveQuickAddSection(null); 
+    };
+
+    const toggleQuickAdd = (section) => {
+        if (activeQuickAddSection === section) {
+            setActiveQuickAddSection(null);
+            setQuickAddTitle('');
+        } else {
+            setActiveQuickAddSection(section);
+            setQuickAddTitle('');
+        }
     };
 
     // Date Display Label
@@ -266,9 +300,10 @@ export default function TaskBoard() {
                                             ))}
                                         </div>
                                     ) : (
-                                        completed.length === 0 && (
+                                        // Mostrar estado vacío SOLO si no hay tareas completadas y NO estamos en modo quick add
+                                        (completed.length === 0 && activeQuickAddSection !== section) && (
                                             <div
-                                                onClick={() => handleNewTask(section)}
+                                                onClick={() => toggleQuickAdd(section)}
                                                 className="py-8 text-center border-2 border-dashed border-slate-200 rounded-lg opacity-50 bg-white/50 mx-2 mt-4 flex flex-col items-center justify-center gap-2 group hover:opacity-100 hover:border-indigo-300 hover:bg-indigo-50/10 transition-all cursor-pointer"
                                             >
                                                 <p className="text-xs text-slate-400">Sin tareas para {getDateLabel()}</p>
@@ -277,6 +312,58 @@ export default function TaskBoard() {
                                                 </div>
                                             </div>
                                         )
+                                    )}
+
+                                    {/* QUICK ADD SECTION */}
+                                    {activeQuickAddSection === section ? (
+                                        <div className="mt-3 bg-white p-3 rounded-xl border-2 border-indigo-100 shadow-sm animate-in fade-in zoom-in-95 duration-200">
+                                            <input
+                                                autoFocus
+                                                type="text"
+                                                placeholder="Escribe la tarea..."
+                                                value={quickAddTitle}
+                                                onChange={(e) => setQuickAddTitle(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') handleQuickAdd(section);
+                                                    if (e.key === 'Escape') toggleQuickAdd(null);
+                                                }}
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-800 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all placeholder:text-slate-400 mb-2"
+                                            />
+                                            <div className="flex justify-between items-center">
+                                                <button
+                                                    onClick={() => toggleQuickAdd(null)}
+                                                    className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                                                    title="Cancelar (Esc)"
+                                                >
+                                                    <X size={16} />
+                                                </button>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => handleNewTask(section)}
+                                                        className="p-1.5 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors text-xs font-medium"
+                                                        title="Abrir formulario completo"
+                                                    >
+                                                        Detalles
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleQuickAdd(section)}
+                                                        disabled={!quickAddTitle.trim()}
+                                                        className="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:hover:bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm shadow-indigo-500/20"
+                                                    >
+                                                        <Plus size={14} /> Agregar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        // Botón siempre visible al final de la lista de pendientes (o después del empty state)
+                                        <button
+                                            onClick={() => toggleQuickAdd(section)}
+                                            className="w-full mt-3 py-2 flex items-center justify-center gap-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50/50 rounded-lg border border-transparent hover:border-indigo-100 border-dashed transition-all group text-sm font-medium"
+                                        >
+                                            <Plus size={16} className="group-hover:scale-110 transition-transform" />
+                                            <span>Agregar Tarea</span>
+                                        </button>
                                     )}
 
                                     {completed.length > 0 && (

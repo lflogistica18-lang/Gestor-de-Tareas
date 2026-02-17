@@ -4,7 +4,7 @@
 echo "🚀 Iniciando servidor de desarrollo del Gestor de Tareas..."
 echo ""
 
-cd /home/lucas/asistente-ventas-plagas-skill/Antigravity/task-organizer
+cd /home/lucas/task-organizer
 
 # Verificar si node_modules existe
 if [ ! -d "node_modules" ]; then
