@@ -22,7 +22,7 @@ export default function Layout({ children }) {
             {/* Sidebar */}
             <aside
                 className={`
-                    fixed top-0 left-0 z-30 h-full bg-slate-900 border-r border-slate-800 transition-all duration-300 ease-in-out
+                    fixed top-0 left-0 z-30 h-full bg-[#3D1500] border-r border-[#5A2000] transition-all duration-300 ease-in-out
                     ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
                     lg:translate-x-0 
                     ${isSidebarCollapsed ? 'w-20' : 'w-64'}
@@ -30,22 +30,22 @@ export default function Layout({ children }) {
             >
                 <div className="flex flex-col h-full">
                     {/* Header */}
-                    <div className={`flex items-center h-16 px-4 border-b border-slate-800 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+                    <div className={`flex items-center h-16 px-4 border-b border-[#5A2000] ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
                         {!isSidebarCollapsed && (
-                            <h1 className="text-lg font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent truncate">
+                            <h1 className="text-lg font-bold bg-gradient-to-r from-[#B8510A] to-[#D4782F] bg-clip-text text-transparent truncate">
                                 Organizador
                             </h1>
                         )}
                         <button
                             onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 hidden lg:block"
+                            className="p-1.5 text-[#E8A570] hover:text-white rounded-lg hover:bg-[#5A2000] hidden lg:block"
                             title={isSidebarCollapsed ? "Expandir" : "Colapsar"}
                         >
                             {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
                         </button>
                         <button
                             onClick={() => setIsSidebarOpen(false)}
-                            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 lg:hidden"
+                            className="p-1.5 text-[#E8A570] hover:text-white rounded-lg hover:bg-[#5A2000] lg:hidden"
                         >
                             <X size={20} />
                         </button>
@@ -54,7 +54,7 @@ export default function Layout({ children }) {
                     {/* Navigation */}
                     <nav className="flex-1 p-4 space-y-2">
                         <div className={`
-                            flex items-center gap-3 p-3 text-indigo-400 bg-indigo-500/10 rounded-xl border border-indigo-500/20
+                            flex items-center gap-3 p-3 text-[#B8510A] bg-[#893101]/10 rounded-xl border border-[#893101]/20
                             ${isSidebarCollapsed ? 'justify-center' : ''}
                         `}>
                             <LayoutIcon size={24} />
@@ -72,7 +72,7 @@ export default function Layout({ children }) {
                 <header className="h-16 bg-white border-b border-slate-200 flex items-center px-6 lg:hidden sticky top-0 z-10 shadow-sm">
                     <button
                         onClick={() => setIsSidebarOpen(true)}
-                        className="mr-4 text-slate-500 hover:text-indigo-600"
+                        className="mr-4 text-slate-500 hover:text-[#893101]"
                     >
                         <Menu size={24} />
                     </button>

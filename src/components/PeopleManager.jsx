@@ -38,7 +38,7 @@ export default function PeopleManager() {
                                 required
                                 value={newName}
                                 onChange={(e) => setNewName(e.target.value)}
-                                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all"
+                                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-[#893101]/50 outline-none transition-all"
                                 placeholder="Ej: Juan Pérez"
                             />
                         </div>
@@ -48,13 +48,13 @@ export default function PeopleManager() {
                                 type="text"
                                 value={newRole}
                                 onChange={(e) => setNewRole(e.target.value)}
-                                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all"
+                                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-[#893101]/50 outline-none transition-all"
                                 placeholder="Ej: Operario"
                             />
                         </div>
                         <button
                             type="submit"
-                            className="w-full flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium shadow-lg shadow-indigo-500/20 transition-all hover:-translate-y-0.5"
+                            className="w-full flex items-center justify-center px-4 py-2 bg-[#893101] hover:bg-[#A03B05] text-white rounded-lg font-medium shadow-lg shadow-[#893101]/20 transition-all hover:-translate-y-0.5"
                         >
                             <Plus size={18} className="mr-2" />
                             Agregar
@@ -71,7 +71,7 @@ export default function PeopleManager() {
                             {people.map(person => (
                                 <div key={person.id} className="flex items-center justify-between p-3 bg-slate-950/50 border border-slate-800 rounded-lg hover:border-slate-700 transition-colors group">
                                     <div className="flex items-center space-x-3">
-                                        <div className="w-10 h-10 bg-indigo-500/10 rounded-full flex items-center justify-center text-indigo-400">
+                                        <div className="w-10 h-10 bg-[#893101]/10 rounded-full flex items-center justify-center text-[#B8510A]">
                                             <User size={20} />
                                         </div>
                                         <div>

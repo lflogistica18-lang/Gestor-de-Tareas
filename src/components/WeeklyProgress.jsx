@@ -49,14 +49,14 @@ export default function WeeklyProgress() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* KPI Card */}
                 <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-[#893101]/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
                     <h3 className="text-slate-500 text-sm font-medium mb-2">Tasa de Completitud Global</h3>
                     <div className="flex items-end items-baseline">
                         <span className="text-4xl font-bold text-white">{progress}%</span>
                         <span className="ml-2 text-sm text-slate-400">Total</span>
                     </div>
                     <div className="w-full bg-slate-800 h-2 rounded-full mt-4 overflow-hidden">
-                        <div className="bg-gradient-to-r from-indigo-500 to-cyan-400 h-full rounded-full transition-all duration-1000" style={{ width: `${progress}%` }}></div>
+                        <div className="bg-gradient-to-r from-[#893101] to-[#D4782F] h-full rounded-full transition-all duration-1000" style={{ width: `${progress}%` }}></div>
                     </div>
                 </div>
 
@@ -73,7 +73,7 @@ export default function WeeklyProgress() {
                                 itemStyle={{ color: '#cbd5e1' }}
                                 cursor={{ fill: '#1e293b', opacity: 0.4 }}
                             />
-                            <Bar dataKey="completed" name="Completadas" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={30} />
+                            <Bar dataKey="completed" name="Completadas" fill="#893101" radius={[4, 4, 0, 0]} barSize={30} />
                             <Bar dataKey="pending" name="Pendientes" fill="#94a3b8" radius={[4, 4, 0, 0]} barSize={30} opacity={0.3} />
                         </BarChart>
                     </ResponsiveContainer>

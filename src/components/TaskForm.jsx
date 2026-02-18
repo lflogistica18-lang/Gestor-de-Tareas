@@ -93,7 +93,7 @@ export default function TaskForm({ onClose, taskToEdit = null, initialDivision =
                             type="button"
                             onClick={() => handleDivisionChange('personal')}
                             className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border transition-all ${formData.division === 'personal'
-                                ? 'bg-indigo-600 border-indigo-500 text-white shadow-md'
+                                ? 'bg-[#893101] border-[#A03B05] text-white shadow-md'
                                 : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
                                 }`}
                         >
@@ -103,7 +103,7 @@ export default function TaskForm({ onClose, taskToEdit = null, initialDivision =
                             type="button"
                             onClick={() => handleDivisionChange('work')}
                             className={`flex items-center justify-center gap-2 py-2.5 rounded-xl border transition-all ${formData.division === 'work'
-                                ? 'bg-indigo-600 border-indigo-500 text-white shadow-md'
+                                ? 'bg-[#893101] border-[#A03B05] text-white shadow-md'
                                 : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
                                 }`}
                         >
@@ -120,7 +120,7 @@ export default function TaskForm({ onClose, taskToEdit = null, initialDivision =
                             autoFocus
                             value={formData.title}
                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-700"
+                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-[#893101]/50 focus:border-[#893101] outline-none transition-all placeholder:text-slate-700"
                             placeholder="¿Qué tienes que hacer?"
                         />
                     </div>
@@ -135,7 +135,7 @@ export default function TaskForm({ onClose, taskToEdit = null, initialDivision =
                                     <select
                                         value={formData.section}
                                         onChange={(e) => setFormData({ ...formData, section: e.target.value })}
-                                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 outline-none appearance-none"
+                                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-200 focus:border-[#893101] outline-none appearance-none"
                                     >
                                         {currentSubsections.map(s => <option key={s} value={s}>{s}</option>)}
                                     </select>
@@ -154,7 +154,7 @@ export default function TaskForm({ onClose, taskToEdit = null, initialDivision =
                                         type="text"
                                         value={newSection}
                                         onChange={(e) => setNewSection(e.target.value)}
-                                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:border-indigo-500 outline-none"
+                                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:border-[#893101] outline-none"
                                         placeholder="Nueva..."
                                         autoFocus
                                         onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddSection())}
@@ -162,7 +162,7 @@ export default function TaskForm({ onClose, taskToEdit = null, initialDivision =
                                     <button
                                         type="button"
                                         onClick={handleAddSection}
-                                        className="px-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl"
+                                        className="px-3 bg-[#893101] hover:bg-[#A03B05] text-white rounded-xl"
                                     >
                                         <Plus size={18} />
                                     </button>
@@ -184,7 +184,7 @@ export default function TaskForm({ onClose, taskToEdit = null, initialDivision =
                                 <select
                                     value={formData.priority}
                                     onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-200 focus:border-indigo-500 outline-none appearance-none"
+                                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-200 focus:border-[#893101] outline-none appearance-none"
                                 >
                                     <option value="low">Baja (Azul)</option>
                                     <option value="medium">Media (Amarillo)</option>
@@ -195,43 +195,13 @@ export default function TaskForm({ onClose, taskToEdit = null, initialDivision =
                         </div>
                     </div>
 
-                    {/* Date */}
-                    <div>
-                        <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Fecha Vencimiento</label>
-                        <div className="relative">
-                            <input
-                                type="date"
-                                required
-                                value={formData.dueDate}
-                                onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all"
-                            />
-                            <Calendar size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
-                        </div>
-                    </div>
-
-                    {/* Assignees (Personas) */}
-                    <div>
-                        <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Personas Relacionadas</label>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                value={formData.assignees}
-                                onChange={(e) => setFormData({ ...formData, assignees: e.target.value })}
-                                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-700"
-                                placeholder="Ej: Juan, María, Equipo de Diseño..."
-                            />
-                            <Users size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
-                        </div>
-                    </div>
-
                     {/* Description */}
                     <div>
                         <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Notas / Descripción</label>
                         <textarea
                             value={formData.description}
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-all h-24 resize-none placeholder:text-slate-700"
+                            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-[#893101]/50 focus:border-[#893101] outline-none transition-all h-24 resize-none placeholder:text-slate-700"
                             placeholder="Detalles adicionales..."
                         />
                     </div>
@@ -246,7 +216,7 @@ export default function TaskForm({ onClose, taskToEdit = null, initialDivision =
                         </button>
                         <button
                             type="submit"
-                            className="flex-1 px-4 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            className="flex-1 px-4 py-3 bg-[#893101] hover:bg-[#A03B05] text-white rounded-xl font-medium shadow-lg shadow-[#893101]/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
                         >
                             {taskToEdit ? 'Guardar Cambios' : 'Crear Tarea'}
                         </button>
