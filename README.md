@@ -1,14 +1,16 @@
 # 📝 Gestor de Tareas Inteligente
 
-Un organizador de tareas personal y profesional construido con **React, Vite y Tailwind CSS**. Diseñado para una gestión fluida con soporte multidependencia (Personal/Trabajo) y organización por secciones.
+Un organizador de tareas personal y profesional construido con **React, Vite y Tailwind CSS**.
+
+**Acceder a la Web:** [https://lflogistica18-lang.github.io/Gestor-de-Tareas/](https://lflogistica18-lang.github.io/Gestor-de-Tareas/)
 
 ## 🚀 Funcionalidades Principales
 
 - **Divisiones**: Separa tus tareas de "Trabajo" y "Personal" con un solo clic.
-- **Secciones Dinámicas**: Organiza cada división en categorías (Ej: Proyectos, Casa, Finanzas).
+- **Secciones Dinámicas**: Organiza cada división en categorías.
 - **Control de Estados**:
   - **Pendiente**: Tareas por iniciar.
-  - **En Curso (Nuevo)**: Tareas activas con resaltado visual (Color Óxido).
+  - **En Curso (Nuevo)**: Tareas con borde **Verde Flúor Neón** y efecto de pulsación.
   - **Completada**: Historial de tareas finalizadas.
 - **Calendario Integrado**: Navegación diaria y selector de fecha completo.
 - **Flexibilidad de Fechas (Nuevo)**: Asigna cualquier fecha de vencimiento directamente desde el formulario.
