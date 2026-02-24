@@ -43,9 +43,7 @@ export default function TaskCard({ task, onEdit, isTomorrowView = false }) {
 
     const headerStyle = isCompleted
         ? 'bg-emerald-100 border-emerald-200 text-emerald-800'
-        : isInProgress
-            ? 'bg-[#893101] border-[#A03B05] text-white shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]'
-            : (priorityHeaderColors[task.priority] || priorityHeaderColors.default);
+        : (priorityHeaderColors[task.priority] || priorityHeaderColors.default);
 
     const handleStartTask = (e) => {
         e.stopPropagation();
@@ -66,7 +64,9 @@ export default function TaskCard({ task, onEdit, isTomorrowView = false }) {
                 group relative flex flex-col rounded-xl overflow-hidden border transition-all cursor-pointer hover:shadow-lg
                 ${isCompleted
                     ? 'bg-slate-50 border-slate-200 opacity-70'
-                    : 'bg-white border-slate-200 hover:border-[#D4782F] shadow-sm'
+                    : isInProgress
+                        ? 'bg-white border-[#893101] border-2 shadow-[0_0_15px_rgba(137,49,1,0.2)] animate-pulse-subtle'
+                        : 'bg-white border-slate-200 hover:border-[#D4782F] shadow-sm'
                 }
             `}
         >
