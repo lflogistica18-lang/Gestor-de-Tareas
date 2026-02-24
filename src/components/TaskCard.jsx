@@ -65,7 +65,7 @@ export default function TaskCard({ task, onEdit, isTomorrowView = false }) {
                 ${isCompleted
                     ? 'bg-slate-50 border-slate-200 opacity-70'
                     : isInProgress
-                        ? 'bg-white border-[#893101] border-2 shadow-[0_0_15px_rgba(137,49,1,0.2)] animate-pulse-subtle'
+                        ? 'bg-white border-[#CCFF00] border-2 shadow-[0_0_15px_rgba(204,255,0,0.4)] animate-pulse-subtle'
                         : 'bg-white border-slate-200 hover:border-[#D4782F] shadow-sm'
                 }
             `}
