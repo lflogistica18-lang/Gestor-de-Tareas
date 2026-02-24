@@ -285,9 +285,17 @@ export default function TaskBoard() {
                     {currentSubsections.map(section => {
                         const sectionTasks = currentTasks.filter(t => (t.section || 'General') === section);
 
-                        // Sort by priority logic
+                        // Sort by priority and status logic
                         const priorityOrder = { high: 1, medium: 2, low: 3, default: 4 };
+                        const statusOrder = { in_progress: 1, pending: 2, completed: 3 };
+
                         const sortTasks = (a, b) => {
+                            // First by status
+                            const sA = statusOrder[a.status] || 2;
+                            const sB = statusOrder[b.status] || 2;
+                            if (sA !== sB) return sA - sB;
+
+                            // Then by priority
                             const pA = priorityOrder[a.priority] || priorityOrder.default;
                             const pB = priorityOrder[b.priority] || priorityOrder.default;
                             return pA - pB;

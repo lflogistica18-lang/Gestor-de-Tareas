@@ -195,6 +195,20 @@ export default function TaskForm({ onClose, taskToEdit = null, initialDivision =
                         </div>
                     </div>
 
+                    {/* Date Picker */}
+                    <div>
+                        <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Fecha de Vencimiento</label>
+                        <div className="relative">
+                            <input
+                                type="date"
+                                value={formData.dueDate}
+                                onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:ring-2 focus:ring-[#893101]/50 focus:border-[#893101] outline-none transition-all"
+                            />
+                            <Calendar size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                        </div>
+                    </div>
+
                     {/* Description */}
                     <div>
                         <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wide">Notas / Descripción</label>

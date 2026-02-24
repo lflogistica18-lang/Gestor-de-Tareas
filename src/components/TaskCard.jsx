@@ -39,9 +39,18 @@ export default function TaskCard({ task, onEdit, isTomorrowView = false }) {
     };
 
     const isCompleted = task.status === 'completed';
+    const isInProgress = task.status === 'in_progress';
+
     const headerStyle = isCompleted
         ? 'bg-emerald-100 border-emerald-200 text-emerald-800'
-        : (priorityHeaderColors[task.priority] || priorityHeaderColors.default);
+        : isInProgress
+            ? 'bg-[#893101] border-[#A03B05] text-white shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]'
+            : (priorityHeaderColors[task.priority] || priorityHeaderColors.default);
+
+    const handleStartTask = (e) => {
+        e.stopPropagation();
+        updateTask(task.id, { status: 'in_progress' });
+    };
 
     return (
         <div
@@ -175,43 +184,60 @@ export default function TaskCard({ task, onEdit, isTomorrowView = false }) {
                     )}
 
                     {/* Action Buttons */}
-                    <div className="flex items-center gap-2 pt-2 border-t border-slate-200">
-                        {!isCompleted ? (
+                    <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200">
+                        {isCompleted ? (
                             <button
                                 onClick={handleComplete}
-                                className="flex-1 flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-all shadow-sm"
-                            >
-                                <CheckCircle2 size={16} />
-                                Marcar como Realizada
-                            </button>
-                        ) : (
-                            <button
-                                onClick={handleComplete}
-                                className="flex-1 flex items-center justify-center gap-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg text-sm transition-all"
+                                className="flex-1 min-w-[140px] flex items-center justify-center gap-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg text-sm transition-all"
                             >
                                 <ArrowRight size={16} className="rotate-180" />
                                 Volver a Pendiente
                             </button>
+                        ) : (
+                            <>
+                                {isInProgress ? (
+                                    <button
+                                        onClick={handleComplete}
+                                        className="flex-1 min-w-[140px] flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-all shadow-sm"
+                                    >
+                                        <CheckCircle2 size={16} />
+                                        Terminar Tarea
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleStartTask}
+                                        className="flex-1 min-w-[140px] flex items-center justify-center gap-2 bg-[#893101] hover:bg-[#A03B05] text-white font-bold py-2 px-4 rounded-lg text-sm transition-all shadow-sm"
+                                    >
+                                        <Clock size={16} />
+                                        Iniciar Tarea
+                                    </button>
+                                )}
+                                <button
+                                    onClick={handleComplete}
+                                    className="flex items-center justify-center p-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white rounded-lg border border-emerald-200 transition-all"
+                                    title="Completar directamente"
+                                >
+                                    <Check size={18} />
+                                </button>
+                            </>
                         )}
 
-                        {!isCompleted && task.dueDate === format(new Date(), 'yyyy-MM-dd') && (
+                        <div className="flex gap-2 w-full mt-1">
+                            {!isCompleted && (
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); moveTaskToTomorrow(task.id); }}
+                                    className="flex-1 py-1.5 px-3 hover:bg-slate-100 rounded-lg text-slate-500 text-[11px] font-bold transition-all border border-slate-200"
+                                >
+                                    Mañana
+                                </button>
+                            )}
                             <button
-                                onClick={(e) => { e.stopPropagation(); moveTaskToTomorrow(task.id); }}
-                                className="py-2 px-3 hover:bg-slate-200 rounded-lg text-slate-500 text-sm font-medium transition-all border border-slate-200"
-                                title="Pasar a mañana"
+                                onClick={handleEditClick}
+                                className="flex-1 py-1.5 px-3 hover:bg-slate-100 rounded-lg text-slate-500 text-[11px] font-bold transition-all border border-slate-200"
                             >
-                                Mañana →
+                                Cambiar Fecha
                             </button>
-                        )}
-                        {isTomorrowView && (
-                            <button
-                                onClick={(e) => { e.stopPropagation(); moveTaskToToday(task.id); }}
-                                className="py-2 px-3 hover:bg-[#FFF3E8] text-[#893101] rounded-lg text-sm font-medium transition-all border border-[#E8A570]"
-                                title="Traer a hoy"
-                            >
-                                ← Hoy
-                            </button>
-                        )}
+                        </div>
                     </div>
 
                     <div className="flex justify-center">
